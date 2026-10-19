@@ -79,7 +79,7 @@
             background: radial-gradient(circle at top, #4a091d, #1a0209, #050002);
             padding-top: calc(20px + env(safe-area-inset-top, 0px));
         }
-        .logo-img { width: 120px; filter: drop-shadow(0 4px 10px rgba(212, 175, 55, 0.5)); margin-bottom: 20px; }
+        .logo-img { width: 110px; filter: drop-shadow(0 4px 10px rgba(212, 175, 55, 0.5)); margin-bottom: 15px; }
 
         #appContainer { 
             display: none; 
@@ -90,10 +90,13 @@
             background: #1a0209;
         }
         
+        /* PERFECT EDGE-TO-EDGE HEADER WITH BALANCED PADDING */
         .app-header {
             background: #1a0209;
-            padding: 12px 15px 15px 15px;
-            padding-top: calc(15px + env(safe-area-inset-top, 0px));
+            padding-top: calc(8px + env(safe-area-inset-top, 0px));
+            padding-bottom: 10px;
+            padding-left: 15px;
+            padding-right: 15px;
             border-bottom: 1px solid rgba(212, 175, 55, 0.3);
             display: flex;
             flex-direction: column;
@@ -104,11 +107,11 @@
             flex-shrink: 0;
         }
         .menu-btn {
-            position: absolute; left: 15px; top: calc(22px + env(safe-area-inset-top, 0px));
-            font-size: 1.8em; color: #F3DA7A; cursor: pointer;
+            position: absolute; left: 15px; top: calc(14px + env(safe-area-inset-top, 0px));
+            font-size: 1.7em; color: #F3DA7A; cursor: pointer;
         }
-        .header-logo { height: 55px; margin-bottom: 6px; filter: drop-shadow(0 2px 5px rgba(212, 175, 55, 0.4)); }
-        .header-title { margin: 0; font-size: 1.15em; line-height: 1.2; letter-spacing: 0.5px; }
+        .header-logo { height: 42px; margin-bottom: 2px; filter: drop-shadow(0 2px 5px rgba(212, 175, 55, 0.4)); }
+        .header-title { margin: 0; font-size: 1.05em; line-height: 1.1; letter-spacing: 0.5px; }
 
         .side-menu-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -861,7 +864,7 @@
             const reviewText = document.getElementById('userRevText').value.trim();
 
             if(!reviewText) {
-                showAlert(isTamil ? "தயவுசெய்து உங்கள் அனுபவத்தை எழுதவும்." : "Please share your experience before submitting.");
+                showAlert(isTamil ?="தயவுசெய்து உங்கள் அனுபவத்தை எழுதவும்." : "Please share your experience before submitting.");
                 return;
             }
 
@@ -878,7 +881,7 @@
                     review: reviewText 
                 })
             })
-            .then(res => res.json())
+            .then(res.json())
             .then(data => {
                 btn.innerHTML = isTamil ? '<span class="ta-text">சமர்ப்பிக்க</span>' : '<span class="en-text">Submit Review</span>';
                 btn.disabled = false;
