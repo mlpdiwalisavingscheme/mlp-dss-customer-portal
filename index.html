@@ -20,12 +20,13 @@
         html, body {
             font-family: 'Outfit', sans-serif;
             margin: 0; padding: 0;
-            background-color: #1a0209;
+            background-color: #1a0209 !important;
             color: #f0e6d2;
             -webkit-tap-highlight-color: transparent;
             overflow: hidden;
             height: 100%;
             width: 100%;
+            color-scheme: dark;
         }
 
         .ta-text { display: none; }
@@ -90,7 +91,6 @@
             background: #1a0209;
         }
         
-        /* PERFECT EDGE-TO-EDGE HEADER WITH BALANCED PADDING */
         .app-header {
             background: #1a0209;
             padding-top: calc(8px + env(safe-area-inset-top, 0px));
@@ -864,7 +864,7 @@
             const reviewText = document.getElementById('userRevText').value.trim();
 
             if(!reviewText) {
-                showAlert(isTamil ?="தயவுசெய்து உங்கள் அனுபவத்தை எழுதவும்." : "Please share your experience before submitting.");
+                showAlert(isTamil ? "தயவுசெய்து உங்கள் அனுபவத்தை எழுதவும்." : "Please share your experience before submitting.");
                 return;
             }
 
@@ -881,7 +881,7 @@
                     review: reviewText 
                 })
             })
-            .then(res.json())
+            .then(res => res.json())
             .then(data => {
                 btn.innerHTML = isTamil ? '<span class="ta-text">சமர்ப்பிக்க</span>' : '<span class="en-text">Submit Review</span>';
                 btn.disabled = false;
