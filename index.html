@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#1a0209">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>MLP DSS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0; padding: 0;
+            background-color: #1a0209;
+            color: #f0e6d2;
+            -webkit-tap-highlight-color: transparent;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+        }
+
+        .ta-text { display: none; }
+        body.lang-ta-active .en-text { display: none; }
+        body.lang-ta-active span.ta-text { display: inline; }
+        body.lang-ta-active div.ta-text, body.lang-ta-active p.ta-text, body.lang-ta-active ul.ta-text, body.lang-ta-active h2.ta-text, body.lang-ta-active h3.ta-text, body.lang-ta-active h4.ta-text { display: block; }
+
+        .emoji, .no-gradient {
+            font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif !important;
+            -webkit-background-clip: initial !important;
+            -webkit-text-fill-color: initial !important;
+            color: initial !important;
+            text-shadow: none !important;
+            display: inline-block;
+        }
+
+        .gold-text {
+            background: linear-gradient(to right, #F3DA7A, #D4AF37, #C59828);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #D4AF37, #C59828, #F3DA7A);
+            color: #1a0209;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+        .btn:active { transform: scale(0.98); }
+
+        .input-box {
+            width: 100%; padding: 14px; border-radius: 10px;
+            border: 1px solid rgba(212,175,55,0.4); background: rgba(0,0,0,0.6);
+            color: #f0e6d2; font-size: 1.1em; box-sizing: border-box;
+            text-align: center; font-family: 'Outfit', sans-serif; margin-bottom: 15px;
+        }
+        .input-box:focus { outline: none; border-color: #F3DA7A; }
+
+        #loginScreen {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; width: 100%; padding: 20px; text-align: center;
+            background: radial-gradient(circle at top, #4a091d, #1a0209, #050002);
+            padding-top: calc(20px + env(safe-area-inset-top, 0px));
+        }
+        .logo-img { width: 120px; filter: drop-shadow(0 4px 10px rgba(212, 175, 55, 0.5)); margin-bottom: 20px; }
+
+        #appContainer { 
+            display: none; 
+            flex-direction: column; 
+            height: 100%; 
+            width: 100%; 
+            position: relative; 
+            background: #1a0209;
+        }
+        
+        /* EDGE-TO-EDGE HEADER COVERING STATUS BAR AREA */
+        .app-header {
+            background: #1a0209;
+            padding: 12px 15px 15px 15px;
+            padding-top: calc(15px + env(safe-area-inset-top, 0px));
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: sticky; top: 0; z-index: 100;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .menu-btn {
+            position: absolute; left: 15px; top: calc(22px + env(safe-area-inset-top, 0px));
+            font-size: 1.8em; color: #F3DA7A; cursor: pointer;
+        }
+        .header-logo { height: 55px; margin-bottom: 6px; filter: drop-shadow(0 2px 5px rgba(212, 175, 55, 0.4)); }
+        .header-title { margin: 0; font-size: 1.15em; line-height: 1.2; letter-spacing: 0.5px; }
+
+        .side-menu-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75); z-index: 3999; display: none;
+        }
+        .side-menu {
+            position: fixed; top: 0; left: -280px; width: 260px; height: 100%;
+            background: #1a0209;
+            z-index: 4000; transition: 0.3s;
+            border-right: 1px solid rgba(212,175,55,0.4); overflow-y: auto;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.9);
+            padding-top: env(safe-area-inset-top, 0px);
+        }
+        .side-menu.open { left: 0; }
+        .menu-header {
+            padding: 20px; text-align: center; border-bottom: 1px solid rgba(212,175,55,0.3);
+            background: radial-gradient(circle at top, #4a091d, #1a0209);
+        }
+        .menu-logo { height: 50px; }
+        .menu-item {
+            padding: 15px 20px; color: #dfdfdf; font-size: 1.05em;
+            border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .menu-item:active { background: rgba(212,175,55,0.15); }
+
+        .content-area { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 15px; 
+            /* NETLIFY BADGE FIX: Extra bottom space added so badge goes out of view */
+            padding-bottom: 140px; 
+            background: radial-gradient(circle at top, #2b0512, #1a0209, #0d0104);
+        }
+        .view-section { display: none; animation: fadeIn 0.3s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,55,0.3); border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+
+        .profile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; margin-top: 15px; }
+        .profile-stat { background: rgba(212,175,55,0.1); border: 1px dashed #D4AF37; padding: 10px 5px; border-radius: 8px; }
+        .stat-value { font-size: 1.2em; font-weight: bold; color: #fff; margin-top: 5px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; margin-top: 10px; }
+        th { background: rgba(212,175,55,0.2); color: #F3DA7A; padding: 10px; border-bottom: 1px solid #D4AF37; }
+        td { padding: 10px; border-bottom: 1px solid rgba(212,175,55,0.15); text-align: center; color: #dfdfdf; }
+        
+        /* BOTTOM NAV WITH SAFE AREA SUPPORT */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #1a0209;
+            border-top: 1px solid rgba(212, 175, 55, 0.35);
+            display: flex; justify-content: space-around; 
+            padding: 8px 0;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+            z-index: 1000;
+        }
+        .nav-item { color: #888; text-align: center; font-size: 0.8em; font-weight: bold; cursor: pointer; flex: 1; transition: 0.3s; }
+        .nav-item .icon { font-size: 1.5em; display: block; margin-bottom: 2px; }
+        .nav-item.active { color: #F3DA7A; text-shadow: 0 0 10px rgba(212,175,55,0.5); transform: translateY(-2px); }
+
+        .calendar-wrapper { text-align: center; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .calendar-header button { background: rgba(212, 175, 55, 0.2); color: #F3DA7A; border: 1px solid #D4AF37; padding: 5px 15px; border-radius: 6px; }
+        .calendar-days, .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .calendar-days div { font-weight: bold; color: #F3DA7A; padding-bottom: 8px; }
+        .calendar-grid div { padding: 10px 0; border-radius: 6px; background: rgba(255,255,255,0.05); }
+        .calendar-grid div.tuesday-highlight { background: rgba(212, 175, 55, 0.25); color: #F3DA7A; border: 1px solid #D4AF37; font-weight: bold; }
+        .calendar-grid div.diwali-highlight { background: #d43f00; color: #fff; border: 1px solid #FFD700; font-weight: bold; }
+
+        .review-card { border-bottom: 1px dashed rgba(212,175,55,0.3); padding-bottom: 10px; margin-bottom: 10px; }
+        .stars { color: #F3DA7A; font-size: 1.1em; }
+        
+        #qrCodeContainer img { margin: 0 auto; border-radius: 8px; padding: 10px; background: white; }
+        
+        #loadingOverlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.85); z-index: 5000;
+            display: none; align-items: center; justify-content: center; flex-direction: column;
+        }
+        .spinner { border: 4px solid rgba(212,175,55,0.3); border-top: 4px solid #F3DA7A; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #customAlertModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 6000;
+            display: none; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;
+        }
+        .alert-box {
+            background: #1a0209; border: 2px solid #D4AF37; border-radius: 16px;
+            width: 100%; max-width: 320px; padding: 25px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9); animation: scaleIn 0.2s ease;
+        }
+        @keyframes scaleIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="gold-text" id="loadingText">Loading...</div>
+    </div>
+
+    <div id="customAlertModal">
+        <div class="alert-box">
+            <h3 class="gold-text" style="margin-top:0; font-size:1.3em;">⚠️ Alert</h3>
+            <p id="customAlertMsg" style="color:#dfdfdf; font-size:0.95em; line-height:1.5; margin-bottom:20px;"></p>
+            <button class="btn" onclick="closeCustomAlert()" style="padding: 10px; font-size:1em;">OK</button>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen">
+        <img src="1000087690.png" alt="MLP Logo" class="logo-img">
+        <h1 class="gold-text" style="margin-top:0; font-size:2em;">MLP DSS</h1>
+        <p style="color:#aaa; font-size:0.9em; margin-bottom: 30px;">
+            <span class="en-text">Login with your registered number</span>
+            <span class="ta-text">பதிவு செய்யப்பட்ட மொபைல் எண்ணை உள்ளிடவும்</span>
+        </p>
+        <input type="tel" id="loginPhone" class="input-box" placeholder="10-Digit Mobile Number" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);">
+        <button class="btn" onclick="loginApp()">
+            <span class="en-text">LOGIN</span><span class="ta-text">உள்நுழைக</span>
+        </button>
+    </div>
+
+    <div id="appContainer">
+        
+        <div class="app-header">
+            <div class="menu-btn" onclick="openMenu()">☰</div>
+            <img src="1000087690.png" alt="Logo" class="header-logo">
+            <h2 class="header-title gold-text">
+                <span class="en-text">MLP DIWALI SAVING SCHEME</span>
+                <span class="ta-text">MLP தீபாவளி சேமிப்புத் திட்டம்</span>
+            </h2>
+        </div>
+
+        <!-- SIDE MENU -->
+        <div class="side-menu-overlay" id="sideMenuOverlay" onclick="closeMenu()"></div>
+        <div class="side-menu" id="sideMenu">
+            <div class="menu-header">
+                <img src="1000087690.png" alt="Logo" class="menu-logo">
+                <h3 class="gold-text" style="margin:8px 0 0 0;">MLP DSS</h3>
+            </div>
+            
+            <div class="menu-item" style="justify-content: space-between; background: rgba(212,175,55,0.1); border-bottom: 1px solid #D4AF37;">
+                <span style="display:flex; align-items:center; gap:10px;"><span class="emoji">🌐</span> Language</span>
+                <div style="display:flex; gap:5px;">
+                    <button id="langEnBtn" onclick="setAppLang('en')" style="background:#D4AF37; color:#1a0209; border:1px solid #D4AF37; padding:4px 8px; border-radius:4px; font-weight:bold; cursor:pointer;">EN</button>
+                    <button id="langTaBtn" onclick="setAppLang('ta')" style="background:transparent; color:#F3DA7A; border:1px solid #D4AF37; padding:4px 8px; border-radius:4px; font-weight:bold; cursor:pointer;">தமிழ்</button>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="switchTab('about'); closeMenu();">
+                <span class="emoji">ℹ️</span> <span class="en-text">About Us</span><span class="ta-text">எங்களைப் பற்றி</span>
+            </div>
+            <div class="menu-item" onclick="switchTab('scheme'); closeMenu();">
+                <span class="emoji">📊</span> <span class="en-text">Scheme Overview</span><span class="ta-text">திட்டத்தின் சிறப்பம்சங்கள்</span>
+            </div>
+            <div class="menu-item" onclick="switchTab('terms'); closeMenu();">
+                <span class="emoji">📜</span> <span class="en-text">Terms & Conditions</span><span class="ta-text">விதிகள் & நிபந்தனைகள்</span>
+            </div>
+            <div class="menu-item" onclick="switchTab('contact'); closeMenu();">
+                <span class="emoji">📞</span> <span class="en-text">Contact Us</span><span class="ta-text">தொடர்பு கொள்ள</span>
+            </div>
+            <div class="menu-item" style="color:#ff4d4d; border-top:1px dashed rgba(212,175,55,0.3); margin-top:10px; padding-top:15px;" onclick="logoutApp()">
+                <span class="emoji">🚪</span> <span class="en-text">Logout</span><span class="ta-text">வெளியேறு</span>
+            </div>
+        </div>
+
+        <div class="content-area">
+            
+            <div id="view-home" class="view-section active">
+                <div class="card">
+                    <h3 class="gold-text" style="margin-top:0; border-bottom:1px dashed #D4AF37; padding-bottom:8px;" id="uName">Name</h3>
+                    <p style="margin:5px 0; color:#dfdfdf; font-size:0.9em;"><span class="emoji">📱</span> <span id="uPhone"></span></p>
+                    
+                    <div class="profile-grid">
+                        <div class="profile-stat">
+                            <div style="font-size:0.7em; color:#aaa;"><span class="en-text">Schemes</span><span class="ta-text">திட்டங்கள்</span></div>
+                            <div class="stat-value" id="uSchemes">0</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div style="font-size:0.7em; color:#aaa;"><span class="en-text">Paid Weeks</span><span class="ta-text">கட்டிய வாரங்கள்</span></div>
+                            <div class="stat-value" id="uPaidWeeks">0</div>
+                        </div>
+                        <div class="profile-stat" style="background:rgba(37, 211, 102, 0.1); border-color:#25D366;">
+                            <div style="font-size:0.7em; color:#25D366;"><span class="en-text">Total Saved</span><span class="ta-text">மொத்த தொகை</span></div>
+                            <div class="stat-value" style="color:#25D366;" id="uTotalSaved">₹0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="gold-text" style="margin-bottom:10px;"><span class="emoji">📜</span> <span class="en-text">Passbook Ledger</span><span class="ta-text">பாஸ்புக் லெட்ஜர்</span></h3>
+                <div class="card" style="padding:0; overflow:hidden;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><span class="en-text">Wk</span><span class="ta-text">வாரம்</span></th>
+                                <th><span class="en-text">Date</span><span class="ta-text">தேதி</span></th>
+                                <th style="text-align:right;"><span class="en-text">Amount</span><span class="ta-text">தொகை</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="ledgerBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-calendar" class="view-section">
+                <div class="card">
+                    <h3 class="gold-text" style="margin-top:0; text-align:center;"><span class="emoji">📅</span> <span class="en-text">Payment Calendar</span><span class="ta-text">பணம் செலுத்தும் காலண்டர்</span></h3>
+                    <p style="text-align:center; font-size:0.85em; color:#aaa;">
+                        <span class="en-text">Pay every Tuesday. <span style="color:#d43f00; font-weight:bold;">🪔 Diwali date highlighted.</span></span>
+                        <span class="ta-text">செவ்வாய்க்கிழமைகளில் பணம் செலுத்த வேண்டும். <span style="color:#d43f00; font-weight:bold;">🪔 தீபாவளி நாளும்</span> தனித்துக் காட்டப்பட்டுள்ளது.</span>
+                    </p>
+                    <div class="calendar-wrapper">
+                        <div class="calendar-header">
+                            <button onclick="changeMonth(-1)">&#10094; Prev</button>
+                            <h3 id="month-year" class="gold-text" style="margin:0; font-size:1.1em;"></h3>
+                            <button onclick="changeMonth(1)">Next &#10095;</button>
+                        </div>
+                        <div class="calendar-days">
+                            <div>Su</div><div>Mo</div><div style="color:#F3DA7A;">Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+                        </div>
+                        <div id="calendar-grid" class="calendar-grid"></div>
+                    </div>
+                    
+                    <div style="text-align:center; margin-top:15px; color:#F3DA7A; font-size:0.95em;">
+                        <span class="en-text">Tuesdays in this month: <strong id="tuesdayCountEn" style="font-size:1.2em; color:#fff;">0</strong></span>
+                        <span class="ta-text">இந்த மாத செவ்வாய்க்கிழமைகள்: <strong id="tuesdayCountTa" style="font-size:1.2em; color:#fff;">0</strong></span>
+                    </div>
+
+                    <!-- Payment Calculation Box -->
+                    <div style="background:rgba(212,175,55,0.1); padding:15px; border-radius:10px; border:1px dashed #D4AF37; margin-top:15px; display:flex; justify-content:space-around; text-align:center;">
+                        <div>
+                            <div style="font-size:0.85em; color:#aaa; margin-bottom:5px;">
+                                <span class="en-text">This Week</span><span class="ta-text">இந்த வாரம்</span>
+                            </div>
+                            <div style="font-size:1.4em; font-weight:bold; color:#F3DA7A;" id="calWeekPay">₹0</div>
+                        </div>
+                        <div style="border-left: 1px dashed rgba(212,175,55,0.3); padding-left: 15px;">
+                            <div style="font-size:0.85em; color:#aaa; margin-bottom:5px;">
+                                <span class="en-text">This Month</span><span class="ta-text">இந்த மாதம்</span>
+                            </div>
+                            <div style="font-size:1.4em; font-weight:bold; color:#F3DA7A;" id="calMonthPay">₹0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-pay" class="view-section">
+                <div class="card" style="text-align:center;">
+                    <h3 class="gold-text" style="margin-top:0;"><span class="emoji">💳</span> <span class="en-text">Make Payment</span><span class="ta-text">பணம் செலுத்த</span></h3>
+                    <p style="font-size:0.9em; color:#ccc;">
+                        <span class="en-text">Secure UPI Payment</span><span class="ta-text">பாதுகாப்பான UPI பேமெண்ட்</span>
+                    </p>
+                    
+                    <div style="background:rgba(212,175,55,0.1); padding:10px; border-radius:8px; margin-bottom:15px; border:1px dashed #D4AF37;">
+                        <strong style="color:#F3DA7A; font-size:1.1em;" id="payConfirmName"></strong><br>
+                        <span style="font-size:0.85em;"><span class="en-text">Schemes:</span><span class="ta-text">திட்டங்கள்:</span> <strong id="payConfirmSchemes" style="font-size:1.2em; color:#fff;"></strong></span>
+                        <div style="font-size:0.8em; color:#aaa; margin-top:5px;" id="payHint">Base Amount: ₹0</div>
+                    </div>
+
+                    <label style="display:block; text-align:left; font-size:0.9em; margin-bottom:5px; color:#aaa;">
+                        <span class="en-text">Enter Amount (₹)</span><span class="ta-text">தொகையை உள்ளிடவும் (₹)</span>
+                    </label>
+                    <input type="number" id="payAmount" class="input-box" placeholder="E.g. 200, 400, 600..." style="font-size:1.5em; font-weight:bold; color:#F3DA7A;">
+
+                    <button class="btn" onclick="triggerUPI()">
+                        <span class="en-text">PAY VIA UPI</span><span class="ta-text">UPI மூலம் செலுத்த</span>
+                    </button>
+
+                    <div id="qrSection" style="display:none; margin-top:20px;">
+                        <p style="color:#F3DA7A; font-size:0.9em;">
+                            <span class="en-text">Scan this QR code to Pay:</span><span class="ta-text">கீழே உள்ள QR கோடை ஸ்கேன் செய்யவும்:</span>
+                        </p>
+                        <div id="qrCodeContainer"></div>
+                        <button class="btn" onclick="sendWhatsappReceipt()" style="background: linear-gradient(45deg, #25D366, #128C7E); color:white; margin-top:15px; display:flex; align-items:center; justify-content:center; gap:10px; text-shadow: none !important;">
+                            <span class="emoji" style="font-size:1.3em;">💬</span> 
+                            <span class="en-text" style="text-shadow:none;">SEND RECEIPT ON WHATSAPP</span>
+                            <span class="ta-text" style="text-shadow:none;">வாட்ஸ்அப்பில் ரசீது அனுப்ப</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-reviews" class="view-section">
+                <div class="card">
+                    <h3 class="gold-text" style="margin-top:0; text-align:center;"><span class="emoji">⭐</span> <span class="en-text">Customer Reviews</span><span class="ta-text">வாடிக்கையாளர் கருத்துகள்</span></h3>
+                    
+                    <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px dashed rgba(212,175,55,0.4); margin-bottom: 20px; text-align:left;">
+                        <h4 class="gold-text" style="margin-top:0; margin-bottom: 12px; font-size:1.1em; text-align:center;">
+                            <span class="en-text">Write a Review</span><span class="ta-text">கருத்தைப் பதிவு செய்ய</span>
+                        </h4>
+                        
+                        <label style="font-size: 0.85em; color: #aaa; margin-bottom: 5px; display: block;">
+                            <span class="en-text">Select Rating</span><span class="ta-text">ரேட்டிங் தேர்ந்தெடுக்க</span>
+                        </label>
+                        <select id="userRevRating" class="input-box" style="padding: 10px; font-size: 1em; margin-bottom: 12px; text-align:left;">
+                            <option value="5">★★★★★ Excellent</option>
+                            <option value="4">★★★★ Good</option>
+                            <option value="3">★★★ Average</option>
+                            <option value="2">★★ Poor</option>
+                            <option value="1">★ Very Poor</option>
+                        </select>
+                        
+                        <label style="font-size: 0.85em; color: #aaa; margin-bottom: 5px; display: block;">
+                            <span class="en-text">Your Experience</span><span class="ta-text">உங்கள் அனுபவம்</span>
+                        </label>
+                        <textarea id="userRevText" class="input-box" rows="3" placeholder="..." style="font-size: 1em; resize: none; margin-bottom: 15px; text-align:left;"></textarea>
+                        
+                        <button class="btn" id="submitRevBtn" onclick="submitAppReview()" style="padding: 12px; font-size: 0.95em;">
+                            <span class="en-text">Submit Review</span><span class="ta-text">சமர்ப்பிக்க</span>
+                        </button>
+                    </div>
+
+                    <div id="reviewsListContainer"></div>
+                </div>
+            </div>
+
+            <!-- 5. ABOUT US VIEW -->
+            <div id="view-about" class="view-section">
+                <div class="card" style="text-align:center;">
+                    <img src="1000087690.png" alt="Logo" style="height:80px; margin-bottom:15px; filter: drop-shadow(0 4px 10px rgba(212, 175, 55, 0.5));">
+                    <h3 class="gold-text" style="margin-top:0;">
+                        <span class="en-text">About Us</span><span class="ta-text">எங்களைப் பற்றி</span>
+                    </h3>
+                    <p class="en-text" style="color:#dfdfdf; font-size:0.95em; line-height:1.6; text-align:left;">
+                        For the past <strong>11 successful years</strong>, MLP has been operating with immense support and unwavering trust from our people. We take pride in running this institution professionally, ensuring transparency, reliability, and immense value to every customer who places their faith in us.
+                    </p>
+                    <p class="ta-text" style="color:#dfdfdf; font-size:0.95em; line-height:1.6; text-align:left;">
+                        கடந்த <strong>11 ஆண்டுகளாக</strong>, மக்களின் பேராதரவுடனும் அசைக்க முடியாத நம்பிக்கையுடனும் MLP வெற்றிகரமாகச் செயல்பட்டு வருகிறது. இந்த நிறுவனத்தை தொழில்முறையாகவும், வெளிப்படைத்தன்மையுடனும் நடத்தி, எங்கள் மீது நம்பிக்கை வைக்கும் ஒவ்வொரு வாடிக்கையாளருக்கும் சிறந்த சேவையை வழங்குவதில் நாங்கள் பெருமிதம் கொள்கிறோம்.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 6. SCHEME OVERVIEW VIEW -->
+            <div id="view-scheme" class="view-section">
+                <div class="card">
+                    <h3 class="gold-text" style="margin-top:0; text-align:center;">
+                        <span class="en-text">Scheme Overview</span><span class="ta-text">திட்டத்தின் சிறப்பம்சங்கள்</span>
+                    </h3>
+                    <div style="background:rgba(212,175,55,0.1); padding:15px; border-radius:10px; border:1px dashed #D4AF37; margin-bottom:15px;">
+                        <ul class="en-text" style="color:#dfdfdf; font-size:0.95em; line-height:1.8; padding-left:20px; margin:0;">
+                            <li>The weekly payment must be made every <strong>Tuesday</strong>.</li>
+                            <li>A minimum of <strong>₹200 per week</strong> must be paid for 52 consecutive weeks.</li>
+                            <li>Upon completion of all 52 weekly payments, two days before Diwali, the following Diwali gifts will be provided:</li>
+                        </ul>
+                        <ul class="ta-text" style="color:#dfdfdf; font-size:0.95em; line-height:1.8; padding-left:20px; margin:0;">
+                            <li>வாராந்திரத் தொகையை ஒவ்வொரு <strong>செவ்வாய்க்கிழமையும்</strong> செலுத்த வேண்டும்.</li>
+                            <li>தொடர்ந்து 52 வாரங்களுக்கு, வாரத்திற்கு குறைந்தபட்சம் <strong>₹200</strong> செலுத்த வேண்டும்.</li>
+                            <li>52 வாரங்களும் பணம் செலுத்தி முடித்தவுடன், தீபாவளிக்கு இரண்டு நாட்களுக்கு முன்பு, பின்வரும் தீபாவளிப் பரிசுகள் வழங்கப்படும்:</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;">
+                        <div style="background: rgba(0,0,0,0.5); border: 1px solid #D4AF37; padding: 12px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.5em; margin-bottom: 5px;">💵</div>
+                            <h4 class="gold-text" style="margin: 0 0 5px 0;"><span class="en-text">Cash</span><span class="ta-text">ரொக்கம்</span></h4>
+                            <span style="color: #fff; font-weight: bold;">₹10,000</span>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.5); border: 1px solid #D4AF37; padding: 12px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.5em; margin-bottom: 5px;">🍬</div>
+                            <h4 class="gold-text" style="margin: 0 0 5px 0;"><span class="en-text">Sweets</span><span class="ta-text">இனிப்பு</span></h4>
+                            <span style="color: #fff; font-weight: bold;"><span class="en-text">1.5 Kg</span><span class="ta-text">1.5 கிலோ</span></span>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.5); border: 1px solid #D4AF37; padding: 12px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.5em; margin-bottom: 5px;">🥨</div>
+                            <h4 class="gold-text" style="margin: 0 0 5px 0;"><span class="en-text">Savouries</span><span class="ta-text">காரம்</span></h4>
+                            <span style="color: #fff; font-weight: bold;"><span class="en-text">1.5 Kg</span><span class="ta-text">1.5 கிலோ</span></span>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.5); border: 1px solid #D4AF37; padding: 12px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.5em; margin-bottom: 5px;">🥘</div>
+                            <h4 class="gold-text" style="margin: 0 0 5px 0;"><span class="en-text">Vessel</span><span class="ta-text">பாத்திரம்</span></h4>
+                            <span style="color: #fff; font-weight: bold;"><span class="en-text">1 Utensil</span><span class="ta-text">1 பாத்திரம்</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. TERMS & CONDITIONS VIEW -->
+            <div id="view-terms" class="view-section">
+                <div class="card">
+                    <h3 class="gold-text" style="margin-top:0; text-align:center;">
+                        <span class="en-text">Terms & Conditions</span><span class="ta-text">விதிகள் & நிபந்தனைகள்</span>
+                    </h3>
+                    <ul class="en-text" style="color:#dfdfdf; font-size:0.9em; line-height:1.7; padding-left:20px;">
+                        <li>If the member discontinues the scheme before completion, the amount paid will not be refunded during the scheme period.</li>
+                        <li>At the end of the 52nd week, the total amount paid will be refunded in full.</li>
+                        <li>If payments are missed for 3 consecutive weeks, further payments under the scheme will not be accepted.</li>
+                        <li>Arrears cannot be combined and paid together. Each week's payment must be made separately within the specified period.</li>
+                        <li>A member may contribute <strong>₹200, ₹400, ₹600</strong> or any other amount per week, according to their preference.</li>
+                        <li><strong>Important:</strong> Weekly payments must only be made in even amounts (multiples of ₹200).</li>
+                        <li>Diwali gifts will be provided based on the total amount contributed under the scheme.</li>
+                    </ul>
+                    <ul class="ta-text" style="color:#dfdfdf; font-size:0.9em; line-height:1.7; padding-left:20px;">
+                        <li>உறுப்பினர் திட்டத்தை பாதியிலேயே நிறுத்தினால், செலுத்திய தொகை திட்டக் காலத்தில் திருப்பித் தரப்பட மாட்டாது.</li>
+                        <li>52 வது வார முடிவில், செலுத்திய மொத்தத் தொகையும் முழுமையாக திருப்பித் தரப்படும்.</li>
+                        <li>தொடர்ந்து 3 வாரங்கள் பணம் செலுத்தத் தவறினால், திட்டத்தின் கீழ் மேலும் பணம் ஏற்றுக்கொள்ளப்பட மாட்டாது.</li>
+                        <li>நிலுவைத் தொகையை ஒன்றாகச் சேர்த்துச் செலுத்த முடியாது. ஒவ்வொரு வாரத்திற்கான தொகையையும் தனித்தனியாகவே செலுத்த வேண்டும்.</li>
+                        <li>உறுப்பினர் தனது விருப்பத்திற்கு ஏற்ப வாரத்திற்கு <strong>₹200, ₹400, ₹600</strong> அல்லது வேறு எந்தத் தொகையையும் செலுத்தலாம்.</li>
+                        <li><strong>முக்கிய குறிப்பு:</strong> சந்தா தொகையை இரட்டைப்படை தொகையாக (₹200-ன் மடங்குகளில்) மட்டுமே செலுத்த வேண்டும்.</li>
+                        <li>திட்டத்தின் கீழ் செலுத்திய மொத்தத் தொகையின் அடிப்படையில் தீபாவளிப் பரிசுகள் வழங்கப்படும்.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 9. CONTACT US VIEW -->
+            <div id="view-contact" class="view-section">
+                <div class="card" style="text-align:center;">
+                    <h3 class="gold-text" style="margin-top:0;">
+                        <span class="en-text">Contact Us</span><span class="ta-text">தொடர்பு கொள்ள</span>
+                    </h3>
+                    <p class="en-text" style="color:#dfdfdf; font-size:0.95em; line-height:1.6; margin-bottom:20px;">
+                        Have any doubts? Reach out to us directly through any of the options below:
+                    </p>
+                    <p class="ta-text" style="color:#dfdfdf; font-size:0.95em; line-height:1.6; margin-bottom:20px;">
+                        சந்தேகங்கள் உள்ளதா? கீழே உள்ள வழிகளில் எங்களை நேரடியாகத் தொடர்பு கொள்ளலாம்:
+                    </p>
+                    
+                    <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px solid rgba(212, 175, 55, 0.3); margin-bottom: 20px;">
+                        <p style="margin: 5px 0;"><span style="color: #aaa;"><span class="en-text">Phone:</span><span class="ta-text">எண்:</span></span> <strong style="color: #F3DA7A;">6382838017</strong></p>
+                        <p style="margin: 5px 0; word-wrap: break-word;"><span style="color: #aaa;"><span class="en-text">Email:</span><span class="ta-text">மின்னஞ்சல்:</span></span> <strong style="color: #F3DA7A;">mlpdiwalisavingscheme@gmail.com</strong></p>
+                    </div>
+
+                    <button class="btn" onclick="window.open('https://wa.me/916382838017', '_blank')" style="background: linear-gradient(45deg, #25D366, #128C7E); color:white; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom: 10px; text-shadow: none !important;">
+                        <span class="emoji" style="font-size:1.3em;">💬</span> 
+                        <span class="en-text" style="text-shadow:none;">Chat on WhatsApp</span>
+                        <span class="ta-text" style="text-shadow:none;">வாட்ஸ்அப் மூலம் தொடர்புகொள்ள</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('home', this)">
+                <span class="icon emoji">🏠</span>
+                <span class="en-text">Home</span><span class="ta-text">முகப்பு</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('calendar', this)">
+                <span class="icon emoji">📅</span>
+                <span class="en-text">Calendar</span><span class="ta-text">காலண்டர்</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('pay', this)">
+                <span class="icon emoji">💳</span>
+                <span class="en-text">Pay</span><span class="ta-text">செலுத்த</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('reviews', this)">
+                <span class="icon emoji">⭐</span>
+                <span class="en-text">Reviews</span><span class="ta-text">கருத்து</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRK60EXOblKRFOPOa05XrhiNbI4dweZu2AxMb9vZo-6KgC2PbPlUioHIa9SsL25MRZ/exec";
+        let currentUser = null;
+        let currentMonthTuesdays = 0; 
+
+        function setAppLang(lang) {
+            if(lang === 'ta') {
+                document.body.classList.add('lang-ta-active');
+                document.getElementById('langTaBtn').style.background = '#D4AF37';
+                document.getElementById('langTaBtn').style.color = '#1a0209';
+                document.getElementById('langEnBtn').style.background = 'transparent';
+                document.getElementById('langEnBtn').style.color = '#F3DA7A';
+                localStorage.setItem('mlp_app_lang', 'ta');
+            } else {
+                document.body.classList.remove('lang-ta-active');
+                document.getElementById('langEnBtn').style.background = '#D4AF37';
+                document.getElementById('langEnBtn').style.color = '#1a0209';
+                document.getElementById('langTaBtn').style.background = 'transparent';
+                document.getElementById('langTaBtn').style.color = '#F3DA7A';
+                localStorage.setItem('mlp_app_lang', 'en');
+            }
+            renderCalendar(); 
+            if(currentUser) { populateDashboard(); updatePaymentEstimates(); }
+        }
+
+        window.onload = () => {
+            let savedLang = localStorage.getItem('mlp_app_lang') || 'en';
+            setAppLang(savedLang);
+
+            const savedUser = localStorage.getItem('mlp_dss_user');
+            if(savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showMainApp();
+                refreshUserData(); 
+            }
+        };
+
+        function showLoading(msg) {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            document.getElementById('loadingText').innerText = msg;
+        }
+        function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
+
+        function showAlert(message) {
+            document.getElementById('customAlertMsg').innerText = message;
+            document.getElementById('customAlertModal').style.display = 'flex';
+        }
+        function closeCustomAlert() {
+            document.getElementById('customAlertModal').style.display = 'none';
+        }
+
+        function openMenu() {
+            document.getElementById('sideMenu').classList.add('open');
+            document.getElementById('sideMenuOverlay').style.display = 'block';
+        }
+        function closeMenu() {
+            document.getElementById('sideMenu').classList.remove('open');
+            document.getElementById('sideMenuOverlay').style.display = 'none';
+        }
+
+        function loginApp() {
+            const phone = document.getElementById('loginPhone').value.trim();
+            const isTamil = document.body.classList.contains('lang-ta-active');
+            if(phone.length !== 10) {
+                showAlert(isTamil ? "சரியான 10 இலக்க எண்ணை உள்ளிடவும்." : "Please enter a valid 10-digit number.");
+                return;
+            }
+            
+            showLoading(isTamil ? "சரிபார்க்கப்படுகிறது..." : "Verifying Account...");
+            fetch(`${SCRIPT_URL}?phone=${phone}&t=${Date.now()}`)
+                .then(res => res.json())
+                .then(data => {
+                    hideLoading();
+                    if(data.status === "Success") {
+                        currentUser = data;
+                        localStorage.setItem('mlp_dss_user', JSON.stringify(data));
+                        showMainApp();
+                    } else {
+                        showAlert(isTamil ? "கணக்கு காணப்படவில்லை. எண்ணைச் சரிபார்க்கவும்." : "Account not found. Please check the registered number.");
+                    }
+                })
+                .catch(err => { hideLoading(); showAlert(isTamil ? "நெட்வொர்க் பிழை. மீண்டும் முயற்சிக்கவும்." : "Network Error. Please try again."); });
+        }
+
+        function refreshUserData() {
+            if(!currentUser) return;
+            fetch(`${SCRIPT_URL}?phone=${currentUser.phone}&t=${Date.now()}`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === "Success") {
+                        currentUser = data;
+                        localStorage.setItem('mlp_dss_user', JSON.stringify(data));
+                        populateDashboard();
+                        updatePaymentEstimates();
+                    }
+                }).catch(e => console.log(e));
+        }
+
+        function logoutApp() {
+            const isTamil = document.body.classList.contains('lang-ta-active');
+            if(confirm(isTamil ? "நிச்சயமாக வெளியேற வேண்டுமா?" : "Are you sure you want to logout?")) {
+                closeMenu();
+                localStorage.removeItem('mlp_dss_user');
+                currentUser = null;
+                document.getElementById('appContainer').style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('loginPhone').value = '';
+            }
+        }
+
+        function showMainApp() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'flex';
+            populateDashboard();
+            renderCalendar();
+            loadReviews();
+            switchTab('home', document.querySelector('.bottom-nav .nav-item'));
+        }
+
+        function formatDateOnly(dStr) {
+            if (!dStr || dStr === 'undefined' || dStr === '--') return '--';
+            try {
+                if (dStr.includes('T')) {
+                    let d = new Date(dStr);
+                    if (!isNaN(d.getTime())) return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+                }
+                if (dStr.includes('/')) return dStr.replaceAll('/', '-');
+                let d = new Date(dStr);
+                if(isNaN(d.getTime())) return dStr;
+                return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+            } catch(e) { return dStr; }
+        }
+
+        function populateDashboard() {
+            document.getElementById('uName').innerText = currentUser.name;
+            document.getElementById('uPhone').innerText = currentUser.phone;
+            document.getElementById('uSchemes').innerText = currentUser.schemes;
+            document.getElementById('uPaidWeeks').innerText = currentUser.paidWeeks;
+            document.getElementById('uTotalSaved').innerText = `₹${currentUser.totalPaid}`;
+            
+            document.getElementById('payConfirmName').innerText = currentUser.name;
+            document.getElementById('payConfirmSchemes').innerText = currentUser.schemes;
+            
+            const isTamil = document.body.classList.contains('lang-ta-active');
+            let baseAmt = (parseInt(currentUser.schemes) || 1) * 200;
+            document.getElementById('payHint').innerText = isTamil ? `அடிப்படை தொகை: ₹${baseAmt} / வாரம்` : `Base Amount: ₹${baseAmt} / week`;
+            
+            let tbody = document.getElementById('ledgerBody');
+            tbody.innerHTML = '';
+            if(currentUser.records && currentUser.records.length > 0) {
+                currentUser.records.forEach(r => {
+                    tbody.innerHTML += `<tr><td>${r.week}</td><td>${formatDateOnly(r.date)}</td><td style="text-align:right; font-weight:bold; color:#F3DA7A;">₹${r.amount}</td></tr>`;
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:#aaa;">${isTamil ? "இதுவரை பணம் செலுத்தப்படவில்லை." : "No payments recorded yet."}</td></tr>`;
+            }
+        }
+
+        function updatePaymentEstimates() {
+            if(!currentUser) return;
+            let schemes = parseInt(currentUser.schemes) || 0;
+            let weekPay = schemes * 200;
+            let monthPay = weekPay * currentMonthTuesdays;
+            
+            document.getElementById('calWeekPay').innerText = `₹${weekPay}`;
+            document.getElementById('calMonthPay').innerText = `₹${monthPay}`;
+        }
+
+        function switchTab(tabId, el = null) {
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            if(el) { el.classList.add('active'); }
+            document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
+            document.getElementById('view-' + tabId).classList.add('active');
+            
+            if(tabId === 'home') refreshUserData();
+        }
+
+        function triggerUPI() {
+            let amt = parseFloat(document.getElementById('payAmount').value);
+            let baseAmt = (parseInt(currentUser.schemes) || 1) * 200;
+            const isTamil = document.body.classList.contains('lang-ta-active');
+            
+            if(!amt || amt <= 0) {
+                showAlert(isTamil ? "சரியான தொகையை உள்ளிடவும்!" : "Please enter a valid amount!");
+                return;
+            }
+            
+            if(amt % baseAmt !== 0) {
+                showAlert(isTamil 
+                    ? `தொகை ₹${baseAmt} ன் மடங்குகளில் இருக்க வேண்டும்!\n\nஅனுமதிக்கப்பட்டவை: ₹${baseAmt}, ₹${baseAmt*2}, ₹${baseAmt*3}...` 
+                    : `Amount must be multiples of ₹${baseAmt}!\n\nAllowed: ₹${baseAmt}, ₹${baseAmt*2}, ₹${baseAmt*3}...`);
+                return;
+            }
+
+            const transactionNote = encodeURIComponent("MLP DSS - " + currentUser.name);
+            const upiLink = `upi://pay?pa=mlpdiwalisavingscheme@ybl&pn=MLP%20Diwali%20Saving%20Scheme&cu=INR&am=${amt}&tn=${transactionNote}`;
+            
+            document.getElementById('qrSection').style.display = 'none';
+
+            const qrContainer = document.getElementById("qrCodeContainer");
+            qrContainer.innerHTML = "";
+            new QRCode(qrContainer, { text: upiLink, width: 180, height: 180, colorDark : "#000", colorLight : "#fff", correctLevel : QRCode.CorrectLevel.H });
+
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                window.location.href = upiLink;
+                let qrTimeout = setTimeout(() => {
+                    if (document.visibilityState === 'visible') {
+                        document.getElementById('qrSection').style.display = 'block';
+                    }
+                }, 2500);
+                
+                const handleVisibilityChange = () => {
+                    if (document.hidden) {
+                        clearTimeout(qrTimeout);
+                        document.removeEventListener("visibilitychange", handleVisibilityChange);
+                    }
+                };
+                document.addEventListener("visibilitychange", handleVisibilityChange);
+            } else {
+                document.getElementById('qrSection').style.display = 'block';
+            }
+        }
+
+        function sendWhatsappReceipt() {
+            let amt = document.getElementById('payAmount').value || "0";
+            let msg = `Hello MLP,\n\nI have made a payment via the App. Please verify.\n\nName: ${currentUser.name}\nPhone: ${currentUser.phone}\nAmount Paid: ₹${amt}\n\n*Sending screenshot with this message.*`;
+            window.open(`https://wa.me/916382838017?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        const diwaliDates = { 2024: "10-31", 2025: "10-20", 2026: "11-08", 2027: "10-29", 2028: "10-17", 2029: "11-05", 2030: "10-26" };
+        let currentDate = new Date(); 
+        function renderCalendar() { 
+            let month = currentDate.getMonth(); let year = currentDate.getFullYear(); 
+            const monthNamesEn = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]; 
+            const monthNamesTa = ["ஜனவரி", "பிப்ரவரி", "மார்ச்", "ஏப்ரல்", "மே", "ஜூன்", "ஜூலை", "ஆகஸ்ட்", "செப்டம்பர்", "அக்டோபர்", "நவம்பர்", "டிசம்பர்"]; 
+            
+            const isTamil = document.body.classList.contains('lang-ta-active');
+            document.getElementById('month-year').innerText = isTamil ? `${monthNamesTa[month]} ${year}` : `${monthNamesEn[month]} ${year}`; 
+            
+            const firstDay = new Date(year, month, 1).getDay(); 
+            const daysInMonth = new Date(year, month + 1, 0).getDate(); 
+            const grid = document.getElementById('calendar-grid'); 
+            grid.innerHTML = ''; 
+            
+            let tuesdaysInMonth = 0;
+
+            for (let i = 0; i < firstDay; i++) { grid.innerHTML += `<div></div>`; } 
+            
+            for (let i = 1; i <= daysInMonth; i++) { 
+                let dayOfWeek = new Date(year, month, i).getDay(); 
+                let isTuesday = (dayOfWeek === 2); 
+                if(isTuesday) tuesdaysInMonth++;
+
+                let checkDateStr = `${(month + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`; 
+                let isDiwali = (diwaliDates[year] === checkDateStr); 
+                let className = isDiwali ? 'diwali-highlight' : (isTuesday ? 'tuesday-highlight' : ''); 
+                grid.innerHTML += `<div class="${className}">${i}</div>`; 
+            } 
+            
+            currentMonthTuesdays = tuesdaysInMonth;
+            document.getElementById('tuesdayCountEn').innerText = tuesdaysInMonth;
+            document.getElementById('tuesdayCountTa').innerText = tuesdaysInMonth;
+            
+            updatePaymentEstimates();
+        }
+        function changeMonth(step) { currentDate.setMonth(currentDate.getMonth() + step); renderCalendar(); }
+
+        function loadReviews() { 
+            const reviewsList = document.getElementById('reviewsListContainer');
+            const isTamil = document.body.classList.contains('lang-ta-active');
+            fetch(`${SCRIPT_URL}?action=getReviews&t=${Date.now()}`)
+            .then(res => res.json()).then(data => { 
+                reviewsList.innerHTML = ''; 
+                if(!data || data.length === 0) { reviewsList.innerHTML = `<p style="color:#aaa; text-align:center;">${isTamil ? "எந்த கருத்தும் இல்லை." : "No reviews yet."}</p>`; return; } 
+                data.reverse().forEach(row => { 
+                    let stars = '★'.repeat(parseInt(row.rating) || 5);
+                    reviewsList.innerHTML += `
+                    <div class="review-card">
+                        <div class="stars">${stars}</div>
+                        <p style="font-style:italic; font-size:0.95em; margin:5px 0;">"${row.review}"</p>
+                        <div style="color:#D4AF37; font-size:0.85em; text-align:right;">- ${row.name}</div>
+                    </div>`; 
+                }); 
+            }).catch(e => { reviewsList.innerHTML = `<p style="color:#ff4d4d; text-align:center;">${isTamil ? "பிழை ஏற்பட்டது." : "Failed to load reviews."}</p>`; }); 
+        }
+
+        function submitAppReview() {
+            const isTamil = document.body.classList.contains('lang-ta-active');
+            if(!currentUser) {
+                showAlert(isTamil ? "கருத்தைப் பதிவு செய்ய முதலில் லாகின் செய்யவும்." : "Please login first to submit a review.");
+                return;
+            }
+
+            const rating = document.getElementById('userRevRating').value;
+            const reviewText = document.getElementById('userRevText').value.trim();
+
+            if(!reviewText) {
+                showAlert(isTamil ? "தயவுசெய்து உங்கள் அனுபவத்தை எழுதவும்." : "Please share your experience before submitting.");
+                return;
+            }
+
+            const btn = document.getElementById('submitRevBtn');
+            btn.innerText = isTamil ? "சமர்ப்பிக்கப்படுகிறது... ⏳" : "Submitting... ⏳";
+            btn.disabled = true;
+
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify({ 
+                    action: "addReview", 
+                    name: currentUser.name, 
+                    rating: rating, 
+                    review: reviewText 
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                btn.innerHTML = isTamil ? '<span class="ta-text">சமர்ப்பிக்க</span>' : '<span class="en-text">Submit Review</span>';
+                btn.disabled = false;
+                
+                showAlert(isTamil ? "நன்றி! உங்கள் கருத்து பதிவு செய்யப்பட்டது." : "Thank you! Your review has been successfully submitted.");
+                
+                document.getElementById('userRevText').value = '';
+                loadReviews(); 
+            })
+            .catch(err => {
+                btn.innerHTML = isTamil ? '<span class="ta-text">சமர்ப்பிக்க</span>' : '<span class="en-text">Submit Review</span>';
+                btn.disabled = false;
+                showAlert(isTamil ? "பிழை ஏற்பட்டது. இணைய இணைப்பை சரிபார்க்கவும்." : "Failed to submit. Please check your connection.");
+            });
+        }
+    </script>
+</body>
+</html>
