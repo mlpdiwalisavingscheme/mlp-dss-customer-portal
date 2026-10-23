@@ -604,7 +604,12 @@
     </div>
 
     <script>
+        // APP SCRIPT URL (For Login, Pay, Reviews)
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRK60EXOblKRFOPOa05XrhiNbI4dweZu2AxMb9vZo-6KgC2PbPlUioHIa9SsL25MRZ/exec";
+        
+        // ADMIN SCRIPT URL (Exclusively for checking Maintenance Mode)
+        const ADMIN_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwCSVVn2Wr3KPCL5WzBU96pIbONuOTTWLPXdGhus2axWXwei_OpFLakMwk5ddXFQc6n/exec";
+
         let currentUser = null;
         let currentMonthTuesdays = 0; 
 
@@ -643,7 +648,7 @@
             }
         };
 
-        // --- MAINTENANCE MODE LOGIC ---
+        // --- FIXED MAINTENANCE MODE LOGIC ---
         function applyMaintenanceState() {
             let isMaint = localStorage.getItem('mlp_maintenance') === 'true';
             const maintScreen = document.getElementById('maintenanceScreen');
@@ -655,17 +660,23 @@
         }
 
         function syncMaintenanceStatus() {
-            fetch(`${SCRIPT_URL}?action=getMaintenanceStatus&t=${Date.now()}`)
-                .then(res => res.json())
-                .then(data => {
-                    if(data && typeof data.status !== 'undefined') {
-                        localStorage.setItem('mlp_maintenance', data.status);
-                        applyMaintenanceState();
-                    }
-                })
-                .catch(err => {
+            // Now checking from the ADMIN_SCRIPT_URL with cache bypassed
+            fetch(`${ADMIN_SCRIPT_URL}?action=getMaintenanceStatus&t=${Date.now()}`, {
+                method: 'GET',
+                cache: 'no-store',
+                redirect: 'follow'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data && typeof data.status !== 'undefined') {
+                    localStorage.setItem('mlp_maintenance', data.status);
                     applyMaintenanceState();
-                });
+                }
+            })
+            .catch(err => {
+                console.log("Maintenance Sync Error:", err);
+                applyMaintenanceState();
+            });
         }
 
         function showLoading(msg) {
