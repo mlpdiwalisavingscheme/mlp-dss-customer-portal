@@ -21,7 +21,6 @@
     <meta property="og:type" content="website">
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
         * {
@@ -209,8 +208,6 @@
         .review-card { border-bottom: 1px dashed rgba(212,175,55,0.3); padding-bottom: 10px; margin-bottom: 10px; }
         .stars { color: #F3DA7A; font-size: 1.1em; }
 
-        #qrCodeContainer img { margin: 0 auto; border-radius: 8px; padding: 10px; background: white; }
-
         #loadingOverlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
             background: rgba(0,0,0,0.85); z-index: 5000;
@@ -243,7 +240,7 @@
                 Our app is currently undergoing scheduled updates and maintenance. We will be back online shortly!<br><br>
                 <strong style="color: #F3DA7A;">~ MLP Management</strong>
             </p>
-            <p style="font-size: 0.85em; color: #888;">For urgent queries, contact: 6382838017</p>
+            <p style="font-size: 0.85em; color: #888;">For urgent queries, contact: 6382838017, 9965236069</p>
         </div>
     </div>
 
@@ -320,6 +317,7 @@
 
         <div class="content-area">
 
+            <!-- HOME DASHBOARD -->
             <div id="view-home" class="view-section active">
                 <div class="card">
                     <h3 class="gold-text" style="margin-top:0; border-bottom:1px dashed #D4AF37; padding-bottom:8px;" id="uName">Name</h3>
@@ -356,6 +354,7 @@
                 </div>
             </div>
 
+            <!-- CALENDAR -->
             <div id="view-calendar" class="view-section">
                 <div class="card">
                     <h3 class="gold-text" style="margin-top:0; text-align:center;"><span class="emoji">📅</span> <span class="en-text">Payment Calendar</span><span class="ta-text">பணம் செலுத்தும் காலண்டர்</span></h3>
@@ -398,42 +397,59 @@
                 </div>
             </div>
 
+            <!-- PAY SCREEN (UPDATED) -->
             <div id="view-pay" class="view-section">
-                <div class="card" style="text-align:center;">
-                    <h3 class="gold-text" style="margin-top:0;"><span class="emoji">💳</span> <span class="en-text">Make Payment</span><span class="ta-text">பணம் செலுத்த</span></h3>
-                    <p style="font-size:0.9em; color:#ccc;">
-                        <span class="en-text">Secure UPI Payment</span><span class="ta-text">பாதுகாப்பான UPI பேமெண்ட்</span>
+                
+                <!-- USER INFO PREVIEW BOX -->
+                <div style="background:rgba(212,175,55,0.1); padding:15px; border-radius:12px; margin-bottom:20px; border:1px dashed #D4AF37; text-align: center;">
+                    <strong style="color:#F3DA7A; font-size:1.2em;" id="payConfirmName"></strong><br>
+                    <span style="font-size:0.95em;"><span class="en-text">Active Schemes:</span><span class="ta-text">திட்டங்கள்:</span> <strong id="payConfirmSchemes" style="font-size:1.2em; color:#fff;"></strong></span>
+                    <div style="font-size:0.85em; color:#aaa; margin-top:5px;" id="payHint">Base Amount: ₹0</div>
+                </div>
+
+                <!-- DIRECT UPI ID COPY BOX -->
+                <div style="background: rgba(0,0,0,0.6); padding: 25px; border-radius: 16px; border: 2px dashed #D4AF37; margin: 0 auto 25px auto; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;">
+                    <p style="margin: 0 0 10px 0; font-size: 0.95em; color: #aaa;">
+                        <span class="en-text">Official Business UPI ID:</span>
+                        <span class="ta-text">அதிகாரப்பூர்வ UPI ID:</span>
                     </p>
+                    <span style="color: #fff; font-weight: bold; font-size: clamp(1.1em, 5vw, 1.25em); letter-spacing: 0.5px; display: block; margin-bottom: 20px; word-break: break-all; overflow-wrap: break-word;">Mlpdiwalisavingscheme2015@ibl</span>
 
-                    <div style="background:rgba(212,175,55,0.1); padding:10px; border-radius:8px; margin-bottom:15px; border:1px dashed #D4AF37;">
-                        <strong style="color:#F3DA7A; font-size:1.1em;" id="payConfirmName"></strong><br>
-                        <span style="font-size:0.85em;"><span class="en-text">Schemes:</span><span class="ta-text">திட்டங்கள்:</span> <strong id="payConfirmSchemes" style="font-size:1.2em; color:#fff;"></strong></span>
-                        <div style="font-size:0.8em; color:#aaa; margin-top:5px;" id="payHint">Base Amount: ₹0</div>
-                    </div>
-
-                    <label style="display:block; text-align:left; font-size:0.9em; margin-bottom:5px; color:#aaa;">
-                        <span class="en-text">Enter Amount (₹)</span><span class="ta-text">தொகையை உள்ளிடவும் (₹)</span>
-                    </label>
-                    <input type="number" id="payAmount" class="input-box" placeholder="E.g. 100, 200, 300..." style="font-size:1.5em; font-weight:bold; color:#F3DA7A;">
-
-                    <button class="btn" onclick="triggerUPI()">
-                        <span class="en-text">PAY VIA UPI</span><span class="ta-text">UPI மூலம் செலுத்த</span>
+                    <button id="mainCopyUpiBtn" onclick="copyMainUpiID()" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span style="font-size: 1.2em;" class="no-gradient emoji">📋</span>
+                        <span class="en-text" style="text-shadow: none;">COPY UPI ID</span>
+                        <span class="ta-text" style="text-shadow: none;">காப்பி செய் (COPY)</span>
                     </button>
+                </div>
 
-                    <div id="qrSection" style="display:none; margin-top:20px;">
-                        <p style="color:#F3DA7A; font-size:0.9em;">
-                            <span class="en-text">Scan this QR code to Pay:</span><span class="ta-text">கீழே உள்ள QR கோடை ஸ்கேன் செய்யவும்:</span>
-                        </p>
-                        <div id="qrCodeContainer"></div>
-                        <button class="btn" onclick="sendWhatsappReceipt()" style="background: linear-gradient(45deg, #25D366, #128C7E); color:white; margin-top:15px; display:flex; align-items:center; justify-content:center; gap:10px; text-shadow: none !important;">
-                            <span class="emoji" style="font-size:1.3em;">💬</span> 
-                            <span class="en-text" style="text-shadow:none;">SEND RECEIPT ON WHATSAPP</span>
-                            <span class="ta-text" style="text-shadow:none;">வாட்ஸ்அப்பில் ரசீது அனுப்ப</span>
-                        </button>
-                    </div>
+                <!-- PAYMENT STEPS -->
+                <div style="text-align: left; background: rgba(20, 5, 10, 0.8); padding: 20px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3);">
+                    <h3 class="gold-text" style="margin-top: 0; font-size: 1.1em; text-align: center; border-bottom: 1px dashed rgba(212, 175, 55, 0.3); padding-bottom: 12px; margin-bottom: 15px;">
+                        <span class="en-text">How to Pay? (Steps)</span><span class="ta-text">பணம் செலுத்துவது எப்படி? (வழிமுறைகள்)</span>
+                    </h3>
+
+                    <ol style="color: #dfdfdf; font-size: 0.95em; line-height: 1.8; padding-left: 20px; margin-bottom: 0;">
+                        <span class="en-text">
+                            <li>Click the <strong>COPY UPI ID</strong> button above.</li>
+                            <li>Open <strong>GPay, PhonePe or Paytm</strong> on your mobile.</li>
+                            <li>Select <strong>"Pay to UPI ID"</strong> or "To Bank/UPI ID" and Paste our ID.</li>
+                            <li>Enter your weekly payment amount.</li>
+                            <li><strong style="color: #F3DA7A;">Must Do:</strong> Type your <strong>NAME</strong> in the "Add a Note" or "Remarks" section before paying.</li>
+                            <li>After successful payment, send a screenshot to our WhatsApp (<a href="https://wa.me/916382838017" style="color: #25D366; text-decoration: none; font-weight: bold;">6382838017</a> / <a href="https://wa.me/919965236069" style="color: #25D366; text-decoration: none; font-weight: bold;">9965236069</a>).</li>
+                        </span>
+                        <span class="ta-text">
+                            <li>மேலே உள்ள <strong>COPY UPI ID</strong> பட்டனை ஒருமுறை அழுத்தவும்.</li>
+                            <li>உங்கள் மொபைலில் <strong>GPay, PhonePe அல்லது Paytm</strong> ஆப்பை ஓபன் செய்யவும்.</li>
+                            <li><strong>"Pay to UPI ID"</strong> அல்லது "To Bank/UPI ID" என்பதைத் தேர்வு செய்து, காப்பி செய்ததை Paste செய்யவும்.</li>
+                            <li>உங்கள் சந்தாத் தொகையை (உதா: ₹100, ₹200) டைப் செய்யவும்.</li>
+                            <li><strong style="color: #F3DA7A;">மிக முக்கியம்:</strong> பணம் செலுத்தும் முன் Add Note அல்லது Remarks-ல் மறக்காமல் <strong>உங்கள் பெயரை</strong> டைப் செய்யவும்.</li>
+                            <li>பணம் செலுத்திய பிறகு, ரசீதை (Screenshot) எங்களின் வாட்ஸ்அப் எண்ணிற்கு (<a href="https://wa.me/916382838017" style="color: #25D366; text-decoration: none; font-weight: bold;">6382838017</a> / <a href="https://wa.me/919965236069" style="color: #25D366; text-decoration: none; font-weight: bold;">9965236069</a>) அனுப்பவும்.</li>
+                        </span>
+                    </ol>
                 </div>
             </div>
 
+            <!-- REVIEWS SCREEN -->
             <div id="view-reviews" class="view-section">
                 <div class="card">
                     <h3 class="gold-text" style="margin-top:0; text-align:center;"><span class="emoji">⭐</span> <span class="en-text">Customer Reviews</span><span class="ta-text">வாடிக்கையாளர் கருத்துகள்</span></h3>
@@ -505,22 +521,22 @@
 
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;">
                         <div style="background: rgba(0,0,0,0.5); border: 1px solid #D4AF37; padding: 12px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 1.5em; margin-bottom: 5px;">💵</div>
+                            <div style="font-size: 1.5em; margin-bottom: 5px;" class="emoji">💵</div>
                             <h4 class="gold-text" style="margin: 0 0 5px 0;"><span class="en-text">Cash</span><span class="ta-text">ரொக்கம்</span></h4>
                             <span style="color: #fff; font-weight: bold;">₹5,000</span>
                         </div>
                         <div style="background: rgba(0,0,0,0.5); border: 1px solid #D4AF37; padding: 12px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 1.5em; margin-bottom: 5px;">🍬</div>
+                            <div style="font-size: 1.5em; margin-bottom: 5px;" class="emoji">🍬</div>
                             <h4 class="gold-text" style="margin: 0 0 5px 0;"><span class="en-text">Sweets</span><span class="ta-text">இனிப்பு</span></h4>
                             <span style="color: #fff; font-weight: bold;"><span class="en-text">1 Kg</span><span class="ta-text">1 கிலோ</span></span>
                         </div>
                         <div style="background: rgba(0,0,0,0.5); border: 1px solid #D4AF37; padding: 12px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 1.5em; margin-bottom: 5px;">🥨</div>
+                            <div style="font-size: 1.5em; margin-bottom: 5px;" class="emoji">🥨</div>
                             <h4 class="gold-text" style="margin: 0 0 5px 0;"><span class="en-text">Savouries</span><span class="ta-text">காரம்</span></h4>
                             <span style="color: #fff; font-weight: bold;"><span class="en-text">1 Kg</span><span class="ta-text">1 கிலோ</span></span>
                         </div>
                         <div style="background: rgba(0,0,0,0.5); border: 1px solid #D4AF37; padding: 12px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 1.5em; margin-bottom: 5px;">🥘</div>
+                            <div style="font-size: 1.5em; margin-bottom: 5px;" class="emoji">🥘</div>
                             <h4 class="gold-text" style="margin: 0 0 5px 0;"><span class="en-text">Vessel</span><span class="ta-text">பாத்திரம்</span></h4>
                             <span style="color: #fff; font-weight: bold;"><span class="en-text">1 Utensil</span><span class="ta-text">1 பாத்திரம்</span></span>
                         </div>
@@ -567,7 +583,7 @@
                     </p>
 
                     <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px solid rgba(212, 175, 55, 0.3); margin-bottom: 20px;">
-                        <p style="margin: 5px 0;"><span style="color: #aaa;"><span class="en-text">Phone:</span><span class="ta-text">எண்:</span></span> <strong style="color: #F3DA7A;">6382838017</strong></p>
+                        <p style="margin: 5px 0;"><span style="color: #aaa;"><span class="en-text">Phone:</span><span class="ta-text">எண்கள்:</span></span> <strong style="color: #F3DA7A;">6382838017, 9965236069</strong></p>
                         <p style="margin: 5px 0; word-wrap: break-word;"><span style="color: #aaa;"><span class="en-text">Email:</span><span class="ta-text">மின்னஞ்சல்:</span></span> <strong style="color: #F3DA7A;">mlpdiwalisavingscheme@gmail.com</strong></p>
                     </div>
 
@@ -646,7 +662,7 @@
             }
         };
 
-        // --- FIXED MAINTENANCE MODE LOGIC ---
+        // --- MAINTENANCE MODE LOGIC ---
         function applyMaintenanceState() {
             let isMaint = localStorage.getItem('mlp_maintenance') === 'true';
             const maintScreen = document.getElementById('maintenanceScreen');
@@ -658,7 +674,6 @@
         }
 
         function syncMaintenanceStatus() {
-            // Now checking from the ADMIN_SCRIPT_URL with cache bypassed
             fetch(`${ADMIN_SCRIPT_URL}?action=getMaintenanceStatus&t=${Date.now()}`, {
                 method: 'GET',
                 cache: 'no-store',
@@ -780,6 +795,7 @@
             document.getElementById('uPaidWeeks').innerText = currentUser.paidWeeks;
             document.getElementById('uTotalSaved').innerText = `₹${currentUser.totalPaid}`;
 
+            // Populating user info in Pay tab
             document.getElementById('payConfirmName').innerText = currentUser.name;
             document.getElementById('payConfirmSchemes').innerText = currentUser.schemes;
 
@@ -817,58 +833,33 @@
             if(tabId === 'home') refreshUserData();
         }
 
-        function triggerUPI() {
-            let amt = parseFloat(document.getElementById('payAmount').value);
-            let baseAmt = (parseInt(currentUser.schemes) || 1) * 100;
+        // --- NEW DIRECT COPY UPI ID FUNCTION ---
+        function copyMainUpiID() {
+            const upiId = "Mlpdiwalisavingscheme2015@ibl";
             const isTamil = document.body.classList.contains('lang-ta-active');
 
-            if(!amt || amt <= 0) {
-                showAlert(isTamil ? "சரியான தொகையை உள்ளிடவும்!" : "Please enter a valid amount!");
-                return;
-            }
+            navigator.clipboard.writeText(upiId).then(() => {
+                const btn = document.getElementById('mainCopyUpiBtn');
+                btn.innerHTML = isTamil 
+                    ? '<span style="font-size: 1.2em;" class="no-gradient emoji">✅</span><span class="ta-text" style="display:inline; text-shadow: none;">காப்பி செய்யப்பட்டது</span>' 
+                    : '<span style="font-size: 1.2em;" class="no-gradient emoji">✅</span><span class="en-text" style="display:inline; text-shadow: none;">COPIED!</span>';
+                btn.style.background = "linear-gradient(45deg, #25D366, #128C7E)";
+                btn.style.color = "#fff";
 
-            if(amt % baseAmt !== 0) {
                 showAlert(isTamil 
-                    ? `தொகை ₹${baseAmt} ன் மடங்குகளில் இருக்க வேண்டும்!\n\nஅனுமதிக்கப்பட்டவை: ₹${baseAmt}, ₹${baseAmt*2}, ₹${baseAmt*3}...` 
-                    : `Amount must be multiples of ₹${baseAmt}!\n\nAllowed: ₹${baseAmt}, ₹${baseAmt*2}, ₹${baseAmt*3}...`);
-                return;
-            }
+                    ? "UPI ID காப்பி செய்யப்பட்டது! \n\nஇப்போது PhonePe அல்லது GPay-ல் Paste செய்து, Add Note-ல் உங்கள் பெயரை டைப் செய்து பணம் கட்டவும்." 
+                    : "UPI ID Copied Successfully! \n\nOpen PhonePe/GPay, Paste it, and don't forget to enter your Name in the 'Add Note' section.");
 
-            const transactionNote = encodeURIComponent("MLP DSS - " + currentUser.name);
-            const upiLink = `upi://pay?pa=Mlpdiwalisavingscheme2015@axl&pn=MLP%20Diwali%20Saving%20Scheme&cu=INR&am=${amt}&tn=${transactionNote}`;
-
-            document.getElementById('qrSection').style.display = 'none';
-
-            const qrContainer = document.getElementById("qrCodeContainer");
-            qrContainer.innerHTML = "";
-            new QRCode(qrContainer, { text: upiLink, width: 180, height: 180, colorDark : "#000", colorLight : "#fff", correctLevel : QRCode.CorrectLevel.H });
-
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-            if (isMobile) {
-                window.location.href = upiLink;
-                let qrTimeout = setTimeout(() => {
-                    if (document.visibilityState === 'visible') {
-                        document.getElementById('qrSection').style.display = 'block';
-                    }
-                }, 2500);
-
-                const handleVisibilityChange = () => {
-                    if (document.hidden) {
-                        clearTimeout(qrTimeout);
-                        document.removeEventListener("visibilitychange", handleVisibilityChange);
-                    }
-                };
-                document.addEventListener("visibilitychange", handleVisibilityChange);
-            } else {
-                document.getElementById('qrSection').style.display = 'block';
-            }
-        }
-
-        function sendWhatsappReceipt() {
-            let amt = document.getElementById('payAmount').value || "0";
-            let msg = `Hello MLP,\n\nI have made a payment via the App. Please verify.\n\nName: ${currentUser.name}\nPhone: ${currentUser.phone}\nAmount Paid: ₹${amt}\n\n*Sending screenshot with this message.*`;
-            window.open(`https://wa.me/916382838017?text=${encodeURIComponent(msg)}`, '_blank');
+                setTimeout(() => { 
+                    btn.innerHTML = isTamil 
+                        ? '<span style="font-size: 1.2em;" class="no-gradient emoji">📋</span><span class="ta-text" style="display:inline; text-shadow: none;">காப்பி செய் (COPY)</span>' 
+                        : '<span style="font-size: 1.2em;" class="no-gradient emoji">📋</span><span class="en-text" style="display:inline; text-shadow: none;">COPY UPI ID</span>';
+                    btn.style.background = "linear-gradient(45deg, #D4AF37, #C59828, #F3DA7A)"; 
+                    btn.style.color = "#1a0209"; 
+                }, 5000);
+            }).catch(err => {
+                showAlert(isTamil ? "காப்பி செய்ய முடியவில்லை. தயவுசெய்து இதை டைப் செய்யவும்: Mlpdiwalisavingscheme2015@ibl" : "Failed to copy. Please manually type: Mlpdiwalisavingscheme2015@ibl");
+            });
         }
 
         const diwaliDates = { 2024: "10-31", 2025: "10-20", 2026: "11-08", 2027: "10-29", 2028: "10-17", 2029: "11-05", 2030: "10-26" };
